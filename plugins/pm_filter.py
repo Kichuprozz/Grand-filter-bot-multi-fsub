@@ -549,44 +549,54 @@ async def cb_handler(client: Client, query: CallbackQuery):
         except Exception as e:
             await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")
     elif query.data.startswith("checksub"):
-        if AUTH_CHANNEL and not await is_subscribed(client, query):
-            await query.answer("𝖨 𝖫𝗂𝗄𝖾 𝖸𝗈𝗎𝗋 𝖲𝗆𝖺𝗋𝗍𝗇𝖾𝗌𝗌, 𝖡𝗎𝗍 𝖣𝗈𝗇'𝗍 𝖡𝖾 𝖮𝗏𝖾𝗋𝗌𝗆𝖺𝗋𝗍 😒 \n𝖩𝗈𝗂𝗇 𝖴𝗉𝖽𝖺𝗍𝖾 𝖢𝗁𝖺𝗇𝗇𝖾𝗅 𝖿𝗂𝗋𝗌𝗍 ;)", show_alert=True)
-            return
-        ident, file_id = query.data.split("#")
-        files_ = await get_file_details(file_id)
-        if not files_:
-            return await query.answer('No such file exist.')
-        files = files_[0]
-        title = files.file_name
-        size = get_size(files.file_size)
-        f_caption = files.caption
-        if CUSTOM_FILE_CAPTION:
-            try:
-                f_caption = CUSTOM_FILE_CAPTION.format(file_name='' if title is None else title,
-                                                       file_size='' if size is None else size,
-                                                       file_caption='' if f_caption is None else f_caption)
-            except Exception as e:
-                logger.exception(e)
-                f_caption = f_caption
-        if f_caption is None:
-            f_caption = f"{title}"
-        await query.answer()
-        await client.send_cached_media(
-            chat_id=query.from_user.id,
-            file_id=file_id,
-            caption=f_caption,
-            protect_content=True if ident == 'checksubp' else False,
-            reply_markup=InlineKeyboardMarkup( [ [ InlineKeyboardButton('⚓️ 𝖦𝗋𝖺𝗇𝖽 ������� ⚓️', url="https://t.me/grandcinemas") ] ] ))
-    elif query.data == "pages":
-        await query.answer()
+    links = await is_subscribed(client, query=query)  # Same as Code 1 logic
+    if AUTH_CHANNEL and len(links) >= 1:
+        await query.answer("𝖨 𝖫𝗂𝗄𝖾 𝖸𝗈𝗎𝗋 𝖲𝗆𝖺𝗋𝗍𝗇𝖾𝗌𝗌, 𝖡𝗎𝗍 𝖣𝗈𝗇'𝗍 𝖡𝖾 𝖮𝗏𝖾𝗋𝗌𝗆𝖺𝗋𝗍 😒 \n𝖩𝗈𝗂𝗇 𝖴𝗉𝖽𝖺𝗍𝖾 𝖢𝗁𝖺𝗇𝗇𝖾𝗅 𝖿𝗂𝗋𝗌𝗍 ;)", show_alert=True)
+        return
+    ident, file_id = query.data.split("#")
+    files_ = await get_file_details(file_id)
+    if not files_:
+        return await query.answer('No such file exist.')
+    files = files_[0]
+    title = files.file_name
+    size = get_size(files.file_size)
+    f_caption = files.caption
+    if CUSTOM_FILE_CAPTION:
+        try:
+            f_caption = CUSTOM_FILE_CAPTION.format(
+                file_name='' if title is None else title,
+                file_size='' if size is None else size,
+                file_caption='' if f_caption is None else f_caption
+            )
+        except Exception as e:
+            logger.exception(e)
+            f_caption = f_caption
+    if f_caption is None:
+        f_caption = f"{title}"
+    await query.answer()
+    await client.send_cached_media(
+        chat_id=query.from_user.id,
+        file_id=file_id,
+        caption=f_caption,
+        protect_content=True if ident == 'checksubp' else False,
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton('⚓️ 𝖦𝗋𝖺𝗇𝖽 𝖢𝗂𝗇𝖾𝗆𝖺𝗌 ⚓️', url="https://t.me/grandcinemas")]
+        ])
+        )
 
     elif query.data.startswith("send_all"):
-        _, req, key, pre = query.data.split("#")
-        if int(req) not in [query.from_user.id, 0]:
-            return await query.answer(script.ALRT_TXT.format(query.from_user.first_name), show_alert=True)
-        
-        await query.answer(url=f"https://t.me/{temp.U_NAME}?start=all_{key}_{pre}")
+    _, req, key, pre = query.data.split("#")
+    
+    if int(req) not in [query.from_user.id, 0]:
+        return await query.answer(script.ALRT_TXT.format(query.from_user.first_name), show_alert=True)
 
+    links = await is_subscribed(client, query=query)
+    if AUTH_CHANNEL and len(links) >= 1:
+        await query.answer("𝖧𝗎𝗁? 𝖸𝗈𝗎 𝖳𝗁𝗂𝗇𝗄 𝖨’𝗆 𝖲𝗍𝗎𝗉𝗂𝖽? 😒 𝖩𝗈𝗂𝗇 𝖴𝗉𝖽𝖺𝗍𝖾 𝖢𝗁𝖺𝗇𝗇𝖾𝗅 𝖿𝗂𝗋𝗌𝗍!", show_alert=True)
+        return
+    
+    # Redirect user to /start with encoded data to start receiving files
+    await query.answer(url=f"https://t.me/{temp.U_NAME}?start=all_{key}_{pre}")
     elif query.data.startswith("killfilesdq"):
         ident, keyword = query.data.split("#")
         await query.message.edit_text(f"<b>Fetching Files for your query {keyword} on DB... Please wait...</b>")
