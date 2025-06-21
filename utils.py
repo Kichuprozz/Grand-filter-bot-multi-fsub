@@ -473,4 +473,4 @@ async def send_all(bot, userid, files, ident):
             file_id=file.file_id,
             caption=f_caption,
             protect_content=True if ident == "filep" else False,
-            reply_markup=InlineKeyboardMarkup( [ [ InlineKeyboardButton('⚔️ BOT UPDATES ⚔️', url="https://t.me/DramaShip") ] ] ))
+            reply_markup=InlineKeyboardMarkup( [ [ InlineKeyboardButton('⚓️ 𝗠𝗔𝗜𝗡 𝗖𝗛𝗔𝗡𝗡𝗘𝗟  ⚓️', url="https://t.me/DramaShip") ] ] ))
